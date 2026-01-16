@@ -1,0 +1,72 @@
+name: CI – ShopSmart
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  backend:
+    name: Backend – Build & Test
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: server
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm install
+
+      - name: Build backend (if exists)
+        run: |
+          if npm run | grep -q "build"; then
+            npm run build
+          else
+            echo "No backend build script"
+          fi
+
+      - name: Run backend tests (optional)
+        run: |
+          if npm run | grep -q "test"; then
+            npm test
+          else
+            echo "No tests configured"
+          fi
+
+  frontend:
+    name: Frontend – Build
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: client
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm install
+
+      - name: Run frontend build
+        run: npm run build
+
